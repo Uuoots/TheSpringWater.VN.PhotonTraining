@@ -4,9 +4,22 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using System.Text;
+using UnityEngine.SceneManagement;
 
 public class NetworkService : MonoBehaviourPunCallbacks
 {
+    [SerializeField] string nickName;
+    [SerializeField] string roomName;
+    [SerializeField] GameObject _playerArmature;
+
+    public string nextRoom = null;
+
+
+    private void Awake()
+    {
+        DontDestroyOnLoad(this.gameObject);
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -16,7 +29,30 @@ public class NetworkService : MonoBehaviourPunCallbacks
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (PhotonNetwork.IsConnectedAndReady)
+            {
+                PhotonNetwork.Disconnect();
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.O))
+        {
+            if (PhotonNetwork.IsConnectedAndReady)
+            {
+                PhotonNetwork.JoinLobby();
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            if (!PhotonNetwork.IsConnected)
+            {
+                PhotonNetwork.ConnectUsingSettings();
+            }
+        }
+
     }
 
     private void ConnectPhotonNetwork() 
@@ -32,6 +68,7 @@ public class NetworkService : MonoBehaviourPunCallbacks
     public override void OnConnectedToMaster()
     {
         Debug.Log($"Photon Connected to Master");
+        
     }
 
     public override void OnCreatedRoom()
@@ -56,22 +93,22 @@ public class NetworkService : MonoBehaviourPunCallbacks
 
     public override void OnJoinedLobby()
     {
+        PhotonNetwork.NickName = $"{nickName}";
         Debug.Log($"Photon Joined Lobby");
+
+        PhotonNetwork.JoinOrCreateRoom(roomName, new RoomOptions { MaxPlayers = 20 }, TypedLobby.Default);
     }
 
     public override void OnJoinedRoom()
     {
-        Debug.Log($"Photon Joined Room");
+        Debug.Log($"Photon Joined Room {PhotonNetwork.CurrentRoom.Name} {PhotonNetwork.CurrentRoom.PlayerCount}");
+        PhotonNetwork.Instantiate(_playerArmature.name, Random.insideUnitSphere, Quaternion.identity);
     }
 
     public override void OnJoinRoomFailed(short returnCode, string message)
     {
         Debug.Log($"Photon Joined Room Failed [return code: {returnCode}] [message: {message}]");
-    }
-
-    public override void OnJoinRandomFailed(short returnCode, string message)
-    {
-        Debug.Log($"Photon Joined Random Failed [return code: {returnCode}] [message: {message}]");
+        PhotonNetwork.JoinOrCreateRoom(roomName, new RoomOptions { MaxPlayers = 20 }, TypedLobby.Default);
     }
 
     public override void OnLeftRoom()
@@ -97,5 +134,15 @@ public class NetworkService : MonoBehaviourPunCallbacks
 
             Debug.Log($"[Photon Room List Update: {stringBuilder.ToString()}]");
         }
+    }
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        Debug.Log($"new player {newPlayer.NickName}");  
+    }
+
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        Debug.Log($"new player {otherPlayer.NickName}");
     }
 }
