@@ -19,7 +19,7 @@ MonoBehaviour:
     AppIdVoice: be61f2ef-eba8-426c-9a61-9531528e7484
     AppVersion: 
     UseNameServer: 1
-    FixedRegion: 
+    FixedRegion: asia
     Server: 
     Port: 0
     ProxyServer: 
@@ -42,6 +42,7 @@ MonoBehaviour:
   - DestroySpaceship
   - Fire
   - RespawnSpaceship
+  - CreateEmoji
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

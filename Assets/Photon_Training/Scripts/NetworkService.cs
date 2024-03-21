@@ -5,12 +5,20 @@ using Photon.Pun;
 using Photon.Realtime;
 using System.Text;
 using UnityEngine.SceneManagement;
+using TMPro;
+using UnityEngine.UI;
 
 public class NetworkService : MonoBehaviourPunCallbacks
 {
     [SerializeField] string nickName;
     [SerializeField] string roomName;
     [SerializeField] GameObject _playerArmature;
+    [SerializeField] TMP_InputField _ipfRoomName;
+    [SerializeField] TMP_InputField _ipfRegion;
+
+    [SerializeField] Button _btnJoinRoom;
+    [SerializeField] Button _btnLeaveRoom;
+    [SerializeField] Button _btnReconnect;
 
     public string nextRoom = null;
 
@@ -18,6 +26,36 @@ public class NetworkService : MonoBehaviourPunCallbacks
     private void Awake()
     {
         DontDestroyOnLoad(this.gameObject);
+
+        _btnJoinRoom?.onClick.AddListener(OnButtonJoinRoomClicked);
+        _btnLeaveRoom?.onClick.AddListener(OnButtonLeaveRoomClicked);
+        _btnReconnect?.onClick.AddListener(OnButtonReconnectClicked);
+    }
+
+    private void OnButtonReconnectClicked()
+    {
+        if (!PhotonNetwork.IsConnected)
+        {
+            AppSettings appSettings = PhotonNetwork.PhotonServerSettings.AppSettings;
+            appSettings.FixedRegion = "asia";
+            PhotonNetwork.ConnectUsingSettings(appSettings);
+        }
+    }
+
+    private void OnButtonLeaveRoomClicked()
+    {
+        if (PhotonNetwork.IsConnectedAndReady)
+        {
+            PhotonNetwork.Disconnect();
+        }
+    }
+
+    private void OnButtonJoinRoomClicked()
+    {
+        if (PhotonNetwork.IsConnectedAndReady)
+        {
+            PhotonNetwork.JoinLobby();
+        }
     }
 
     // Start is called before the first frame update
@@ -29,28 +67,14 @@ public class NetworkService : MonoBehaviourPunCallbacks
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            if (PhotonNetwork.IsConnectedAndReady)
-            {
-                PhotonNetwork.Disconnect();
-            }
-        }
-
         if (Input.GetKeyDown(KeyCode.O))
         {
-            if (PhotonNetwork.IsConnectedAndReady)
-            {
-                PhotonNetwork.JoinLobby();
-            }
+            
         }
 
         if (Input.GetKeyDown(KeyCode.I))
         {
-            if (!PhotonNetwork.IsConnected)
-            {
-                PhotonNetwork.ConnectUsingSettings();
-            }
+            
         }
 
     }
@@ -96,7 +120,7 @@ public class NetworkService : MonoBehaviourPunCallbacks
         PhotonNetwork.NickName = $"{nickName}";
         Debug.Log($"Photon Joined Lobby");
 
-        PhotonNetwork.JoinOrCreateRoom(roomName, new RoomOptions { MaxPlayers = 20 }, TypedLobby.Default);
+        PhotonNetwork.JoinOrCreateRoom(_ipfRoomName.text, new RoomOptions { MaxPlayers = 20 }, TypedLobby.Default);
     }
 
     public override void OnJoinedRoom()
@@ -108,7 +132,7 @@ public class NetworkService : MonoBehaviourPunCallbacks
     public override void OnJoinRoomFailed(short returnCode, string message)
     {
         Debug.Log($"Photon Joined Room Failed [return code: {returnCode}] [message: {message}]");
-        PhotonNetwork.JoinOrCreateRoom(roomName, new RoomOptions { MaxPlayers = 20 }, TypedLobby.Default);
+        PhotonNetwork.JoinOrCreateRoom(_ipfRoomName.text, new RoomOptions { MaxPlayers = 20 }, TypedLobby.Default);
     }
 
     public override void OnLeftRoom()

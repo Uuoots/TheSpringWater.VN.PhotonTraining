@@ -1,4 +1,5 @@
-﻿ using UnityEngine;
+﻿using Photon.Pun;
+using UnityEngine;
 #if ENABLE_INPUT_SYSTEM 
 using UnityEngine.InputSystem;
 #endif
@@ -106,6 +107,8 @@ namespace StarterAssets
         private StarterAssetsInputs _input;
         private GameObject _mainCamera;
 
+        public PhotonView photonView;
+
         private const float _threshold = 0.01f;
 
         private bool _hasAnimator;
@@ -156,9 +159,14 @@ namespace StarterAssets
         {
             _hasAnimator = TryGetComponent(out _animator);
 
-            JumpAndGravity();
-            GroundedCheck();
-            Move();
+            if (photonView.IsMine)
+            {
+                JumpAndGravity();
+                GroundedCheck();
+                Move();
+            }
+
+            
         }
 
         private void LateUpdate()
